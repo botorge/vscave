@@ -70,9 +70,10 @@ def unfollow_blogs():
 	for blog in timestamps:
 		try: updated = int(timestamps[blog])
 		except:
-			# TUMBLR API REQUEST 
+			# TUMBLR API REQUEST
 			blog_info = tumblr_api.blog_info(path, blog)
-			updated = blog_info['blog']['updated']
+			try: updated = blog_info['blog']['updated']
+			except: updated = 0
 			# DB-CONNECT
 			conn = sqlite3.connect(db_path)
 			c = conn.cursor()
@@ -89,7 +90,7 @@ def unfollow_blogs():
 	for blog in to_unfollow:
 		# TUMBLR API UNFOLLOW
 		unfollow = tumblr_api.unfollow(path, blog)
-		if unfollow['blog']['followed'] == False:
+		if unfollow == {u'meta': {u'status': 404, u'msg': u'Not Found'}, u'response': []} or unfollow['blog']['followed'] == False:
 			# DB-CONNECT
 			conn = sqlite3.connect(db_path)
 			c = conn.cursor()
@@ -129,7 +130,7 @@ def follow_blogs():
 				except: updated = now-1
 				if (now-updated) < threshold: non_foll[blog] = non_following[blog]
 				else: pass
-	
+
 		# sort unique distances
 		unique = []
 		for blog in non_foll:
